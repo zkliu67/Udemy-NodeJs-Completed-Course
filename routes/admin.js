@@ -1,21 +1,17 @@
-const path = require('path');
 const express = require('express');
 const router = express.Router();
-
-const rootDir = require('../util/path');
-
-const products = []; // An array for storing all products.
+const adminController = require('../controllers/admin');
 
 // .use allows for adding middlewares
-router.get('/add-product', (req, res, next) => {
-  res.sendFile(path.join(rootDir, 'views', 'add-product.html'));
-})
+// /admin/add-product => GET
+router.get('/add-product', adminController.getAddProduct);
+
+// /admin/products => GET
+router.get('/products', adminController.getProducts);
 
 // change app.use -> app.get or app.post
-router.post('/add-product', (req, res, next) => {
-  products.push({title: req.body.title});
-  res.redirect('/');
-})
+router.post('/add-product', adminController.postAddProduct);
 
-exports.routes = router;
-exports.products = products;
+router.get('/edit-product/:productId', adminController.getEditProduct);
+
+module.exports = router;
