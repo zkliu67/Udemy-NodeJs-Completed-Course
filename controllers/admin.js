@@ -1,3 +1,4 @@
+const mongodb = require('mongodb');
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res, next) => {
@@ -10,13 +11,10 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res, next) => {
   const {title, imageUrl, price, description} = req.body
+  const product = new Product(title, description, price, imageUrl, null, req.user._id);
 
-  req.user.createProduct({
-    title: title,
-    price: price,
-    imageUrl: imageUrl,
-    description: description
-  }).then(result => {
+  product.save()
+  .then(result => {
     res.redirect('/admin/products');
   }).catch(err => {
     console.log(err);
@@ -29,11 +27,12 @@ exports.getEditProduct = (req, res, next) => {
   
   const prodId = req.params.productId;
   
-  Product.findByPk(prodId)
+  Product.findById(prodId)
     .then(product => {
+      console.log(product);
       res.render('admin/edit-product', {
         pageTitle: "Edit Product", 
-        path:"/admin/add-product",
+        path:"/admin/edit-product",
         editing: editMode,
         product: product
       });  
@@ -46,39 +45,34 @@ exports.getEditProduct = (req, res, next) => {
 exports.postEditProduct = (req, res, next) => {
   // fetch information 
   const {productId, title, imageUrl, price, description} = req.body
+  const product = new Product(title, description, price, imageUrl, productId);
 
-  Product.findByPk(productId)
-    .then(product => {
-      product.title = title,
-      product.imageUrl = imageUrl,
-      product.price = price,
-      product.description = description
-      return product.save()
-    })
+  product.save()
     .then(result => {
-      console.log('update')
+      console.log('UPDATED PRODUCT!');
       res.redirect('/admin/products');
     })
-    .catch()
+    .catch(err => console.log(err))
+    
 }
 
 exports.postDeleteProduct = (req, res, next) => {
   const productId = req.body.productId;
-  Product.findByPk(productId)
-    .then(product => {
-      return product.destroy();
-    })
-    .then(result => {
+
+  Product.deleteById(productId)
+    .then(() => {
       res.redirect('/admin/products');
     })
     .catch(err => console.log(err));
 }
 
 //https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png
+    
+
+
 
 exports.getProducts = (req, res, next) => {
-  req.user
-    .getProducts()
+  Product.fetchAll()
     .then(products => {
       res.render('admin/products', {
         products: products,
@@ -92,5 +86,4 @@ exports.getProducts = (req, res, next) => {
     .catch(err => {
       console.log(err);
     })
-    
 }
