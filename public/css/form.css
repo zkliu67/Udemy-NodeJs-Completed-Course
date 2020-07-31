@@ -36,3 +36,7 @@ button:hover {
   background-color: lightslategrey;
   color: white;
 }
+
+.form-control input.invalid {
+  border-color: red;
+}
